@@ -1,3 +1,4 @@
+package master;
 
 public class Cards {
 	public Integer Number;
