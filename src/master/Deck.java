@@ -1,4 +1,6 @@
 package master;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -20,7 +22,16 @@ public class Deck {
 	
 	public Cards DealACard()
 	{
-		int rand = ThreadLocalRandom.current().nextInt(0, deck.size());
+		SecureRandom random;
+		int rand = 0;
+		try {
+			random = SecureRandom.getInstance("SHA-512");
+			rand = random.nextInt(deck.size());
+		}
+		catch (NoSuchAlgorithmException e) {
+			rand = ThreadLocalRandom.current().nextInt(0, deck.size());
+		}
+		
 		Cards card = this.deck.get(rand);
 		this.deck.remove(rand);
 		return card;

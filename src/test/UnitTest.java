@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import master.Cards;
+import master.Deck;
 import master.GameJudge;
 import master.Outcome;
 
@@ -19,7 +20,14 @@ public class UnitTest {
 		//CheckTwoPairs();
 		//CheckThreeOfAKind();
 		//CheckDeterminKind();
-		CheckIfPlay1Win();
+		//CheckIfPlay1Win();
+		CheckDeck();
+	}
+	
+	private static void CheckDeck()
+	{
+		Deck deck = new Deck();
+		deck.DealACard();
 	}
 	
 	private static void CheckIfPlay1Win()
