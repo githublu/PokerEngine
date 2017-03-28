@@ -15,10 +15,17 @@ public class GameJudge {
 			throw new IllegalArgumentException("not 7 hards in total");
 		}
 
-		player1.addAll(table);
-		player2.addAll(table);
-		Outcome player1Outcome = DetermineKind(player1);
-		Outcome player2Outcome = DetermineKind(player2);
+		List<Cards> play1Cards = new ArrayList<>();
+		List<Cards> play2Cards = new ArrayList<>();
+		
+		play1Cards.addAll(table);
+		play1Cards.addAll(player1);
+		play2Cards.addAll(table);
+		play2Cards.addAll(player2);
+		Outcome player1Outcome = DetermineKind(play1Cards);
+		Outcome player2Outcome = DetermineKind(play2Cards);
+		player1Outcome.GetMaxFive();
+		player2Outcome.GetMaxFive();
 		return isPlayer1Win(player1Outcome, player2Outcome);
 	}
 
@@ -83,20 +90,23 @@ public class GameJudge {
 		Outcome isStraight = CheckIfStraight(player, isFlush);
 		playerOutcome = CheckPairs(player, isStraight);
 
-		if (playerOutcome.Flush != null && playerOutcome.Straight != null) {
+		if (!playerOutcome.Flush.isEmpty() && !playerOutcome.Straight.isEmpty()) {
 			playerOutcome.kind = Outcome.Kind.StraightFlush;
-		} else if (playerOutcome.Flush != null) {
+		} else if (!playerOutcome.Flush.isEmpty()) {
 			playerOutcome.kind = Outcome.Kind.Flush;
-		} else if (playerOutcome.Straight != null) {
+		} else if (!playerOutcome.Straight.isEmpty()) {
 			playerOutcome.kind = Outcome.Kind.Straight;
-		} else if (playerOutcome.FourOfAKind != null) {
+		} else if (playerOutcome.FourOfAKind != 0) {
 			playerOutcome.kind = Outcome.Kind.FourOfAKind;
-		} else if (playerOutcome.ThreeOfAKind != null && playerOutcome.Pairs != null) {
+			int single = Collections.max(playerOutcome.Singles);
+			playerOutcome.Singles.clear();
+			playerOutcome.Singles.add(single);
+		} else if (playerOutcome.ThreeOfAKind != 0 && !playerOutcome.Pairs.isEmpty()) {
 			playerOutcome.kind = Outcome.Kind.FullHouse;
-		} else if (playerOutcome.ThreeOfAKind != null) {
+		} else if (playerOutcome.ThreeOfAKind != 0) {
 			playerOutcome.kind = Outcome.Kind.ThreeOfAKind;
-		} else if (playerOutcome.Pairs != null) {
-			if (playerOutcome.Pairs.size() == 2) {
+		} else if (!playerOutcome.Pairs.isEmpty()) {
+			if (playerOutcome.Pairs.size() >= 2) {
 				playerOutcome.kind = Outcome.Kind.TwoPairs;
 			} else {
 				playerOutcome.kind = Outcome.Kind.Pair;
@@ -118,6 +128,10 @@ public class GameJudge {
 		int coutsOfDiamond = 0;
 		Cards.Suits suit = null;
 		Map<Cards.Suits, List<Integer>> map = new HashMap<>();
+		map.put(Cards.Suits.Spade, new ArrayList<Integer>());
+		map.put(Cards.Suits.Club, new ArrayList<Integer>());
+		map.put(Cards.Suits.Heart, new ArrayList<Integer>());
+		map.put(Cards.Suits.Diamond, new ArrayList<Integer>());
 		for (Cards card : cards) {
 			switch (card.suit) {
 			case Spade:
@@ -179,16 +193,17 @@ public class GameJudge {
 		List<Integer> list = new ArrayList<>();
 		for (int i = 0; i < 3; i++) {
 			if (!isStraight) {
-				int start = numbers.get(i);
+				int cur = numbers.get(i);
 				list.clear();
 				list.add(numbers.get(i));
 				for (int j = i + 1; j < i + 5; j++) {
 					int next = numbers.get(j);
-					if (next != start + 1) {
+					if (next != cur + 1) {
 						isStraight = false;
 						break;
 					} else {
 						list.add(next);
+						cur = next;
 						if (j == i + 4) {
 							isStraight = true;
 						}
@@ -206,14 +221,12 @@ public class GameJudge {
 	}
 
 	public Outcome CheckPairs(List<Cards> cards, Outcome outcome) {
-		Set<Integer> cardSet = new HashSet<>();
 		Map<Integer, Integer> map = new HashMap<>();
 
 		for (Cards card : cards) {
-			if (!cardSet.add(card.Number)) {
-				int originalCounts = map.get(card.Number);
-				map.put(card.Number, originalCounts++);
-			}
+			int originalCounts = map.get(card.Number) == null ? 0 : map.get(card.Number);
+			originalCounts++;
+			map.put(card.Number, originalCounts);
 		}
 
 		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
@@ -234,7 +247,7 @@ public class GameJudge {
 	private int CompareTwoList(List<Integer> l1, List<Integer> l2)
 	{
 		int size = l1.size();
-		for(int i = size; i >= 0; i--)
+		for(int i = size - 1; i >= 0; i--)
 		{
 			if(l1.get(i) > l2.get(i))
 			{

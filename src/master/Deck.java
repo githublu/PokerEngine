@@ -27,6 +27,18 @@ public class Deck {
 		return card;
 	}
 	
+	public void RemoveCard(Cards card)
+	{
+		try
+		{
+			this.deck.remove(card);
+		}
+		catch(Exception ex)
+		{
+			throw ex;
+		}
+	}
+	
 	public int RemainingCards()
 	{
 		return this.deck.size();
