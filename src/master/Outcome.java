@@ -71,6 +71,9 @@ public class Outcome {
 				ThreeOfAKind = 0;
 				Flush.clear();
 				//Straight.clear();
+				for (int i = 0; i < Straight.size()-5; i++) {
+					Straight.remove(i);
+				}
 				Singles.clear();
 				Pairs.clear();
 				break;
@@ -78,6 +81,9 @@ public class Outcome {
 				FourOfAKind = 0;
 				ThreeOfAKind = 0;
 				//Flush.clear();
+				for (int i = 0; i < Flush.size()-5; i++) {
+					Flush.remove(i);
+				}
 				Straight.clear();
 				Singles.clear();
 				Pairs.clear();
