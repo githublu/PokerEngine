@@ -1,7 +1,6 @@
 package master;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Deck {
@@ -25,6 +24,18 @@ public class Deck {
 		Cards card = this.deck.get(rand);
 		this.deck.remove(rand);
 		return card;
+	}
+	
+	public void RemoveCard(Cards card)
+	{
+		try
+		{
+			this.deck.remove(card);
+		}
+		catch(Exception ex)
+		{
+			throw ex;
+		}
 	}
 	
 	public int RemainingCards()
