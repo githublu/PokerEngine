@@ -41,7 +41,10 @@ public class Deck {
 	{
 		try
 		{
-			this.deck.remove(card);
+			if (!this.deck.remove(card))
+			{
+				throw new IllegalArgumentException("Not removed from deck");
+			}
 		}
 		catch(Exception ex)
 		{

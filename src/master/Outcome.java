@@ -43,6 +43,13 @@ public class Outcome {
 		{
 			throw new IllegalArgumentException("determine kind first");
 		}
+		 
+		int numberOfCards = NumberOfCards(this);
+//		if (numberOfCards != 7 && this.Flush.isEmpty() && this.Straight.isEmpty())
+//		{
+//			PrintOutcome(this);
+//			throw new IllegalArgumentException("not start with 7 cards but " + numberOfCards);
+//		}
 		
 		int largestIndex = 0;
 		int secondLargestIndex = 0;
@@ -52,10 +59,10 @@ public class Outcome {
 		int thirdLargestIndex = 0;
 		
 		Outcome originalOutcome = new Outcome();
-		originalOutcome.Flush = this.Flush;
-		originalOutcome.Straight = this.Straight;
-		originalOutcome.Singles = this.Singles;
-		originalOutcome.Pairs = this.Pairs;
+		originalOutcome.Flush.addAll(this.Flush);
+		originalOutcome.Straight.addAll(this.Straight);
+		originalOutcome.Singles.addAll(this.Singles);
+		originalOutcome.Pairs.addAll(this.Pairs);
 		originalOutcome.FourOfAKind = this.FourOfAKind;
 		originalOutcome.ThreeOfAKind = this.ThreeOfAKind;
 		originalOutcome.kind = this.kind;
@@ -81,8 +88,11 @@ public class Outcome {
 				FourOfAKind = 0;
 				ThreeOfAKind = 0;
 				//Flush.clear();
-				for (int i = 0; i < Flush.size()-5; i++) {
-					Flush.remove(i);
+				if (Flush.size() > 5)
+				{
+					for (int i = 0; i <= Flush.size()-5; i++) {
+						Flush.remove(i);
+					}
 				}
 				Straight.clear();
 				Singles.clear();
@@ -174,10 +184,7 @@ public class Outcome {
 				break;
 			}
 			
-			int numFourOfAKind = this.FourOfAKind == 0 ? 0 : 4;
-			int numThreeOfAKind = this.ThreeOfAKind == 0 ? 0 : 3;
-			int numberOfCards = numFourOfAKind + numThreeOfAKind + this.Flush.size() + this.Straight.size() + this.Singles.size() + this.Pairs.size()*2; 
-			
+			numberOfCards = NumberOfCards(this);
 			if(numberOfCards != 5)
 			{
 				throw new IllegalArgumentException("not 5 cards in the end for Kind: " + this.kind + " number of cards: " + numberOfCards);
@@ -202,5 +209,22 @@ public class Outcome {
 		System.out.println("Straight: " + outcome.Straight);
 		System.out.println("Singles: " + outcome.Singles);
 		System.out.println("Pairs: " + outcome.Pairs);
+	}
+	
+	public int NumberOfCards(Outcome outcome)
+	{
+		int numFourOfAKind = this.FourOfAKind == 0 ? 0 : 4;
+		int numThreeOfAKind = this.ThreeOfAKind == 0 ? 0 : 3;
+		int numberOfCards = 0;
+		if (this.Flush.size() == this.Straight.size())
+		{
+			numberOfCards = numFourOfAKind + numThreeOfAKind + this.Flush.size() + this.Singles.size() + this.Pairs.size()*2;
+		}
+		else
+		{
+			numberOfCards = numFourOfAKind + numThreeOfAKind + this.Flush.size() + this.Straight.size() + this.Singles.size() + this.Pairs.size()*2;
+		}
+		
+		return numberOfCards;
 	}
 }

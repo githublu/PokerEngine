@@ -96,9 +96,6 @@ public class GameJudge {
 			playerOutcome.kind = Outcome.Kind.Straight;
 		} else if (playerOutcome.FourOfAKind != 0) {
 			playerOutcome.kind = Outcome.Kind.FourOfAKind;
-			int single = Collections.max(playerOutcome.Singles);
-			playerOutcome.Singles.clear();
-			playerOutcome.Singles.add(single);
 		} else if (playerOutcome.ThreeOfAKind != 0 && !playerOutcome.Pairs.isEmpty()) {
 			playerOutcome.kind = Outcome.Kind.FullHouse;
 		} else if (playerOutcome.ThreeOfAKind != 0) {
@@ -220,25 +217,72 @@ public class GameJudge {
 
 	public Outcome CheckPairs(List<Cards> cards, Outcome outcome) {
 		Map<Integer, Integer> map = new HashMap<>();
-
-		for (Cards card : cards) {
+		List<Cards> remainingCards = new ArrayList<>();
+		remainingCards.addAll(cards);
+		if(!outcome.Straight.isEmpty() || !outcome.Flush.isEmpty())
+		{
+			return outcome;
+		}
+		
+		if(remainingCards.size() != 7)
+		{
+			throw new IllegalArgumentException("not have 7 cards but " + remainingCards.size());
+		}
+		
+		for (Cards card : remainingCards) {
 			int originalCounts = map.get(card.Number) == null ? 0 : map.get(card.Number);
 			originalCounts++;
 			map.put(card.Number, originalCounts);
 		}
-
+		
 		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-			if (entry.getValue() == 4) {
+			if (entry.getValue() > 4)
+			{
+				throw new IllegalArgumentException("wrong deck: this number has " + entry.getValue() + " times");
+			}
+			else if (entry.getValue() == 4) {
 				outcome.FourOfAKind = entry.getKey();
+				if (outcome.ThreeOfAKind != 0)
+				{
+					outcome.Singles.add(outcome.ThreeOfAKind);
+					outcome.ThreeOfAKind = 0;
+				}
+				if (!outcome.Pairs.isEmpty())
+				{
+					outcome.Singles.addAll(outcome.Pairs);
+				}
 			} else if (entry.getValue() == 3) {
-				outcome.ThreeOfAKind = entry.getKey();
+				if (outcome.FourOfAKind != 0)
+				{
+					outcome.Singles.add(entry.getKey());
+				}
+				if (outcome.ThreeOfAKind == 0)
+				{
+					outcome.ThreeOfAKind = entry.getKey();
+				}
+				else if (entry.getKey() > outcome.ThreeOfAKind)
+				{
+					outcome.Pairs.add(outcome.ThreeOfAKind);
+					outcome.ThreeOfAKind = entry.getKey();
+				}
 			} else if (entry.getValue() == 2) {
-				outcome.Pairs.add(entry.getKey());
-			} else {
+				if (outcome.FourOfAKind != 0)
+				{
+					outcome.Singles.add(entry.getKey());
+				}
+				else
+				{
+					outcome.Pairs.add(entry.getKey());
+				}
+			} else if (entry.getValue() == 1){
 				outcome.Singles.add(entry.getKey());
 			}
+			else
+			{
+				throw new IllegalArgumentException("0 occurance in map");
+			}
 		}
-
+		
 		return outcome;
 	}
 	
