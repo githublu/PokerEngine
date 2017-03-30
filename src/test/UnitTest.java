@@ -21,7 +21,11 @@ public class UnitTest {
 		//CheckThreeOfAKind();
 		//CheckDeterminKind();
 		//CheckIfPlay1Win();
-		CheckDeck();
+		//CheckDeck();
+		for (int i = 0; i < 5; i++)
+		{
+			System.out.print(i + ", ");
+		}
 	}
 	
 	private static void CheckDeck()

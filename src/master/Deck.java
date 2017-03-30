@@ -37,6 +37,17 @@ public class Deck {
 		return card;
 	}
 	
+	public void RemoveAllCards(List<Cards> cards)
+	{
+		for (Cards card : cards)
+		{
+			if (card != null)
+			{
+				RemoveCard(card);
+			}
+		}
+	}
+	
 	public void RemoveCard(Cards card)
 	{
 		try
