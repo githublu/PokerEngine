@@ -1,0 +1,58 @@
+switch
+case 1
+	check if gameover
+	for each player(table info, map<id, moves>previous actions in this round, hands, total number of player)
+	check state
+case 2
+case 3
+
+player int move()
+{
+	//use table info to get my strength
+	winvsrandomhand tp get my strength
+
+	// get random hands strength
+	// my strength = my strength - randome hands
+
+	// use my strength to determine actions
+
+	return amount
+
+	// use player 1's previous move to determine strengh
+
+	// convert into list of possible cards
+
+	// user player 1's strength and my current strength to determine action
+
+	myStrength = myStrength - opponentStrength
+
+	return amount
+}
+
+function stregnthToMove()
+{	x
+	if(strength > 0.9)
+	if(strength > 0.8)
+	if(strength > 0.7)
+	if(strength > 0.6)
+	if(strength > 0.5)
+	if(strength > 0.4)
+	{
+		max bet = x;
+
+	}
+}
+
+
+if (amount == previous amount)
+{
+	call
+}
+esle if (amount < previous amount)
+{
+	fold
+}
+else if (amount > previous amount)
+{
+	bet
+}
