@@ -6,7 +6,26 @@ import java.util.List;
 import java.util.Map;
 
 public class GameJudge {
-
+	
+	public int JudgeGame(List<Cards> table, List<List<Cards>> players)
+	{
+		int winner = 0;
+		for(int i = 0; i < players.size()-1; i++)
+		{
+			if(players.get(i+1) == null || players.get(i+1).isEmpty())
+			{
+				continue;
+			}
+			
+			int result = Judge(table, players.get(winner), players.get(i+1));
+			if (result < 0) {
+				winner = i+1;
+			}
+		}
+		
+		return winner;
+	}
+	
 	public int Judge(List<Cards> table, List<Cards> player1, List<Cards> player2) {
 		Integer totalCards = table.size() + player1.size();
 		if (totalCards != 7) {

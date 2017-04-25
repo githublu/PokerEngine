@@ -22,10 +22,9 @@ public class UnitTest {
 		//CheckDeterminKind();
 		//CheckIfPlay1Win();
 		//CheckDeck();
-		for (int i = 0; i < 5; i++)
-		{
-			System.out.print(i + ", ");
-		}
+		int[]preflopMoves = new int[6-1];
+		int i = preflopMoves[2];
+		System.out.print(i);
 	}
 	
 	private static void CheckDeck()

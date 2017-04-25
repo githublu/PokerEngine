@@ -9,17 +9,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class StrengthCalculator {
-	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		// Deck deck = new Deck();
-		List<Cards> ownCards = new ArrayList<>();
-		List<Cards> visibleCards = new ArrayList<>();
+//		List<Cards> ownCards = new ArrayList<>();
+//		List<Cards> visibleCards = new ArrayList<>();
 		// ownCards.add(new Cards(2, Cards.Suits.Spade));
 		// ownCards.add(new Cards(2, Cards.Suits.Club));
 		// table = GetAllCardsStengthTable(visibleCards, ownCards, 1000);
 		// System.out.println(Arrays.deepToString(table));
-		PrintStrengthTable(GetAllCardsStengthTable(visibleCards, ownCards, 100));
-	}
+		//PrintStrengthTable(GetAllCardsStengthTable(visibleCards, ownCards, 100));
 
 	public static Map<Cards, Map<Cards, Double>> GetAllCardsStengthTable(List<Cards> visibleCards, List<Cards> ownCards,
 			int numberOfGames) {
@@ -104,7 +102,7 @@ public class StrengthCalculator {
 		return strengthTable;
 	}
 
-	private static int WinVsRandomeHand(List<Cards> visibleCards, List<Cards> cardsInHand) {
+	public static int WinVsRandomeHand(List<Cards> visibleCards, List<Cards> cardsInHand) {
 		int size = visibleCards.size();
 		Deck deck = new Deck();
 		deck.RemoveCard(cardsInHand.get(0));
