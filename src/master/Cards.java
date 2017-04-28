@@ -31,4 +31,10 @@ public class Cards {
 			return false;
 		}
 	}
+	
+	@Override public String toString()
+	{
+		String result = this.suit.toString() + this.Number.toString(); 
+		return result;
+	}
 }

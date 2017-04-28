@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import BlindAI.BlindPlayer;
+import BlindAI.HumanPlayer;
 import BlindAI.SamplePlayer;
 import master.TableInfo.CurrentState;
 
@@ -12,14 +14,12 @@ public class GameWorkflow {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		System.out.println("Start a new game");
-		
-		Deck deck = new Deck();
-		
-		SamplePlayer p1 = new SamplePlayer();
-		p1.cardsInHand.add(deck.DealACard());
-		p1.cardsInHand.add(deck.DealACard());
+
+		BlindPlayer p1 = new BlindPlayer();
+		BlindPlayer p2 = new BlindPlayer();
 		List<BasePlayer> players = new ArrayList<>();
 		players.add(p1);
+		players.add(p2);
 		GameWorkflow gameWorkflow = new GameWorkflow();
 		
 		int winner = gameWorkflow.PlayGames(players);
@@ -34,7 +34,7 @@ public class GameWorkflow {
 	{
 		Deck deck = new Deck();
 		List<Cards> cardsOntable = new ArrayList<>();
-		TableInfo tableInfo = new TableInfo(cardsOntable, CurrentState.Preflop);
+		TableInfo tableInfo = new TableInfo(cardsOntable, CurrentState.Initialize);
 		int winnerNumber = -1;
 		int sb = 1;
 		int bb = 2;
@@ -42,11 +42,14 @@ public class GameWorkflow {
 		// player.get(1) is bb
 		// player.get(size-1) is dealer
 		
-		int[]preflopMoves = new int[players.size()-1];
+		int totalPlayers = players.size();
+		int[]preflopMoves = new int[totalPlayers];
 		int preflopMaxPlayer = players.size();
-//		int[] flopMoves = new int[players.size()-1];
-//		int[] turnMoves = new int[players.size()-1];
-//		int[] riverMoves = new int[players.size()-1];
+		
+		boolean firstFlop = true;
+		boolean firstTurn = true;
+		boolean firstRiver = true;
+		
 		List<Integer> foldPlayer = new ArrayList<>();
 		int size = players.size();
 		if (size < 2)
@@ -56,7 +59,7 @@ public class GameWorkflow {
 		
 		int maxBet = 0;
 		
-		while (winnerNumber != -1) {
+		while (true) {
 			switch (tableInfo.CurrentState) {
 			case Initialize:
 				players.get(0).Chips -= sb;
@@ -69,9 +72,11 @@ public class GameWorkflow {
 					players.get(i).cardsInHand.add(deck.DealACard());
 					players.get(i).cardsInHand.add(deck.DealACard());
 				}
-				break;
-			case Preflop:
 				
+				tableInfo.CurrentState = CurrentState.FirstRound;
+				break;
+			case FirstRound:
+				System.out.println("FirstRound");
 				// UTG fist move
 				for (int i = 2; i < preflopMaxPlayer; i++)
 				{
@@ -83,7 +88,7 @@ public class GameWorkflow {
 					}
 					
 					// existing player get move
-					int move = players.get(i).PreflopMove(tableInfo, i, preflopMoves);
+					int move = players.get(i).PreflopMove(tableInfo, i, preflopMoves, bb);
 					preflopMoves[i] += move;
 					
 					// Check player action
@@ -117,7 +122,7 @@ public class GameWorkflow {
 					}
 					
 					// existing player get move
-					int move = players.get(i).PreflopMove(tableInfo, i, preflopMoves);
+					int move = players.get(i).PreflopMove(tableInfo, i, preflopMoves, bb);
 					preflopMoves[i] += move;
 					
 					// Check player action
@@ -152,7 +157,7 @@ public class GameWorkflow {
 				}
 				
 				// Move State
-				if (!isEven(preflopMoves, preflopMaxPlayer))
+				if (!isEven(preflopMoves, foldPlayer))
 				{
 					tableInfo.CurrentState = CurrentState.Preflop;
 				}
@@ -163,11 +168,85 @@ public class GameWorkflow {
 					tableInfo.CardsInTable.add(deck.DealACard());
 					tableInfo.CardsInTable.add(deck.DealACard());
 					tableInfo.CardsInTable.add(deck.DealACard());
+					for (Cards card : tableInfo.CardsInTable)
+					{
+						System.out.println(card.toString());
+					}
+				}
+				break;
+			case Preflop:
+				System.out.println("Preflop");
+				for (int i = 0; i < totalPlayers; i++)
+				{
+					// skip players who have already fold
+					if(foldPlayer.contains(i) || preflopMoves[i] == maxBet)
+					{
+						//preflopMoves.add(i, 0);
+						continue;
+					}
+					
+					if (preflopMoves[i] > maxBet)
+					{
+						throw new IllegalArgumentException("exising move is more than maxbet: " + preflopMoves[i] + " : " + maxBet);
+					}
+					
+					// existing player get move
+					int move = players.get(i).PreflopMove(tableInfo, i, preflopMoves, bb);
+					preflopMoves[i] += move;
+					
+					// Check player action
+					if (preflopMoves[i] == maxBet)
+					{
+						// call no action
+					}
+					else if (preflopMoves[i] > maxBet)
+					{
+						// raise
+						maxBet = preflopMoves[i];
+						preflopMaxPlayer = i;
+					}
+					else 
+					{
+						// fold
+						foldPlayer.add(i);
+					}
+					
+					ApplyMoveToPlayer(players.get(i), move);
+				}
+				
+				// check if gameover
+				if (players.size() - foldPlayer.size() == 1)
+				{
+					// game over
+					return preflopMaxPlayer;
+				}
+				else if (players.size() - foldPlayer.size() == 0)
+				{
+					throw new IllegalArgumentException("all player fold in preflop. Impossible ending");
+				}
+				
+				// Move State
+				if (!isEven(preflopMoves, foldPlayer))
+				{
+					tableInfo.CurrentState = CurrentState.Preflop;
+				}
+				else
+				{
+					tableInfo.CurrentState = CurrentState.Flop;
+					preflopMaxPlayer = players.size();
+					tableInfo.CardsInTable.add(deck.DealACard());
+					tableInfo.CardsInTable.add(deck.DealACard());
+					tableInfo.CardsInTable.add(deck.DealACard());
+					for (Cards card : tableInfo.CardsInTable)
+					{
+						System.out.println(card.toString());
+					}
 				}
 				
 				break;
 			case Flop:
-				for (int i = 0; i < preflopMaxPlayer; i++)
+				System.out.println("Flop");
+				for (int i = 0; i < totalPlayers; i++)
 				{
 					// skip players who have already fold
 					if(foldPlayer.contains(i))
@@ -176,8 +255,18 @@ public class GameWorkflow {
 						continue;
 					}
 					
+					if (!firstFlop &&  preflopMoves[i] == maxBet)
+					{
+						continue;
+					}
+					
+					if (preflopMoves[i] > maxBet)
+					{
+						throw new IllegalArgumentException("exising move is more than maxbet: " + preflopMoves[i] + " : " + maxBet);
+					}
+					
 					// existing player get move
-					int move = players.get(i).PreflopMove(tableInfo, i, preflopMoves);
+					int move = players.get(i).FlopMove(tableInfo, i, preflopMoves, bb);
 					preflopMoves[i] += move;
 					
 					// Check player action
@@ -212,19 +301,25 @@ public class GameWorkflow {
 				}
 				
 				// Move State
-				if (!isEven(preflopMoves, preflopMaxPlayer))
+				if (!isEven(preflopMoves, foldPlayer))
 				{
 					tableInfo.CurrentState = CurrentState.Flop;
+					firstFlop = false;
 				}
 				else
 				{
 					tableInfo.CurrentState = CurrentState.Turn;
 					preflopMaxPlayer = players.size();
 					tableInfo.CardsInTable.add(deck.DealACard());
+					for (Cards card : tableInfo.CardsInTable)
+					{
+						System.out.println(card.toString());
+					}
 				}
 				break;
 			case Turn:
-				for (int i = 0; i < preflopMaxPlayer; i++)
+				System.out.println("Turn");
+				for (int i = 0; i < totalPlayers; i++)
 				{
 					// skip players who have already fold
 					if(foldPlayer.contains(i))
@@ -233,8 +328,17 @@ public class GameWorkflow {
 						continue;
 					}
 					
+					if (!firstTurn &&  preflopMoves[i] == maxBet)
+					{
+						continue;
+					}
+					
+					if (preflopMoves[i] > maxBet)
+					{
+						throw new IllegalArgumentException("exising move is more than maxbet: " + preflopMoves[i] + " : " + maxBet);
+					}
 					// existing player get move
-					int move = players.get(i).PreflopMove(tableInfo, i, preflopMoves);
+					int move = players.get(i).TurnMove(tableInfo, i, preflopMoves, bb);
 					preflopMoves[i] += move;
 					
 					// Check player action
@@ -269,19 +373,25 @@ public class GameWorkflow {
 				}
 				
 				// Move State
-				if (!isEven(preflopMoves, preflopMaxPlayer))
+				if (!isEven(preflopMoves, foldPlayer))
 				{
 					tableInfo.CurrentState = CurrentState.Turn;
+					firstTurn = false;
 				}
 				else
 				{
 					tableInfo.CurrentState = CurrentState.River;
 					preflopMaxPlayer = players.size();
 					tableInfo.CardsInTable.add(deck.DealACard());
+					for (Cards card : tableInfo.CardsInTable)
+					{
+						System.out.println(card.toString());
+					}
 				}
 				break;
 			case River:
-				for (int i = 0; i < preflopMaxPlayer; i++)
+				System.out.println("River");
+				for (int i = 0; i < totalPlayers; i++)
 				{
 					// skip players who have already fold
 					if(foldPlayer.contains(i))
@@ -290,8 +400,18 @@ public class GameWorkflow {
 						continue;
 					}
 					
+					if (!firstRiver &&  preflopMoves[i] == maxBet)
+					{
+						continue;
+					}
+					
+					if (preflopMoves[i] > maxBet)
+					{
+						throw new IllegalArgumentException("exising move is more than maxbet: " + preflopMoves[i] + " : " + maxBet);
+					}
+					
 					// existing player get move
-					int move = players.get(i).PreflopMove(tableInfo, i, preflopMoves);
+					int move = players.get(i).RiverMove(tableInfo, i, preflopMoves, bb);
 					preflopMoves[i] += move;
 					
 					// Check player action
@@ -326,9 +446,10 @@ public class GameWorkflow {
 				}
 				
 				// Move State
-				if (!isEven(preflopMoves, preflopMaxPlayer))
+				if (!isEven(preflopMoves, foldPlayer))
 				{
 					tableInfo.CurrentState = CurrentState.River;
+					firstRiver = false;
 				}
 				else
 				{
@@ -336,7 +457,12 @@ public class GameWorkflow {
 				}
 				break;
 			case GameFinish:
-				// determin winner
+				// determine winner
+				for (Cards card : tableInfo.CardsInTable)
+				{
+					System.out.println(card.toString());
+				}
+				
 				GameJudge judge = new GameJudge();
 				List<List<Cards>> remainingPlayer = new ArrayList<>();
 				for (int i = 0; i < players.size(); i++)
@@ -345,18 +471,17 @@ public class GameWorkflow {
 					{
 						remainingPlayer.add(players.get(i).cardsInHand);
 					}
+					else
+					{
+						remainingPlayer.add(new ArrayList<Cards>());
+					}
 				}
-				judge.JudgeGame(tableInfo.CardsInTable, remainingPlayer);
-				break;
+				winnerNumber = judge.JudgeGame(tableInfo.CardsInTable, remainingPlayer);
+				return winnerNumber;
 			default:
 				throw new IllegalArgumentException("invalid current state" + tableInfo.CurrentState.toString());
-			}
-			
-			winnerNumber = DetermineWinner();
-			
+			}			
 		}
-		
-		return winnerNumber;
 	}
 	
 	private static void ApplyMoveToPlayer(BasePlayer player, int move)
@@ -369,26 +494,18 @@ public class GameWorkflow {
 		return 0;
 	}
 	
-	private static boolean isEven(int[] previousMoves, int maxBetter)
+	private static boolean isEven(int[] previousMoves, List<Integer> foldPlayers)
 	{
 		int amount = -1;
-		if(maxBetter > previousMoves.length)
+		for (int i = 0; i < previousMoves.length; i++)
 		{
-			throw new IllegalArgumentException("maxBetter > previousMoves.length" + maxBetter + " : " + previousMoves.length);
-		}
-		
-		for(int i = 0; i < maxBetter; i++)
-		{
-			if ( amount == -1)
+			if (!foldPlayers.contains(i))
 			{
-				if (previousMoves[i] != 0)
+				if (amount == -1)
 				{
 					amount = previousMoves[i];
 				}
-			}
-			else
-			{
-				if (previousMoves[i] != 0 && amount != previousMoves[i])
+				else if(amount != previousMoves[i])
 				{
 					return false;
 				}

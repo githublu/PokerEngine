@@ -107,6 +107,10 @@ public class StrengthCalculator {
 		Deck deck = new Deck();
 		deck.RemoveCard(cardsInHand.get(0));
 		deck.RemoveCard(cardsInHand.get(1));
+		for (Cards card : visibleCards)
+		{
+			deck.RemoveCard(card);
+		}
 
 		List<Cards> table = new ArrayList<>();
 		table.addAll(visibleCards);

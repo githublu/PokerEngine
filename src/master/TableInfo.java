@@ -5,7 +5,7 @@ import java.util.List;
 public class TableInfo {
 	public static enum CurrentState
 	{
-		Initialize, Preflop, Flop, Turn, River, GameFinish
+		Initialize, FirstRound, Preflop, Flop, Turn, River, GameFinish
 	}
 	
 	public List<Cards> CardsInTable;
